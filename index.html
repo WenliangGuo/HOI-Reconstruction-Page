@@ -74,22 +74,36 @@
             monocular video with physics: hand and object dynamics, coupled through contact forces.
           </p>
           <div class="keynums">
-            <a class="keynum" href="#hot3d"><span class="kn-val">11.74 &rarr; <b>5.26</b> cm</span>
-              <span class="kn-lbl">HOT3D hand W-MPJPE</span></a>
-            <a class="keynum" href="#hot3d"><span class="kn-val">52.8 &rarr; <b>78.4</b></span>
-              <span class="kn-lbl">HOT3D object ADD-S</span></a>
-            <a class="keynum" href="#dexycb"><span class="kn-val">11.52 &rarr; <b>9.51</b> mm</span>
-              <span class="kn-lbl">DexYCB MPJPE</span></a>
-            <a class="keynum" href="#robot"><span class="kn-val">25.0 &rarr; <b>74.9</b>%</span>
-              <span class="kn-lbl">robot imitation success</span></a>
-            <a class="keynum keynum-wide" href="#world-model">
-              <span class="kn-pair"><span class="kn-val">38.49 &rarr; <b>32.33</b> mm</span>
-                <span class="kn-lbl">world-model hand MPJPE</span></span>
-              <span class="kn-pair"><span class="kn-val">0.284 &rarr; <b>0.260</b></span>
-                <span class="kn-lbl">world-model hand mLPIPS</span></span>
-            </a>
+            <div class="kn-grid kn-grid-3">
+            <a class="keynum" href="#hot3d"><span class="kn-head">HOT3D &middot; hand&ndash;object</span>
+              <span class="kn-row">
+                <span class="kn-pair"><span class="kn-val">11.74 &rarr; <b>5.26</b> cm</span><span class="kn-lbl">hand W-MPJPE</span></span>
+                <span class="kn-pair"><span class="kn-val">52.8 &rarr; <b>78.4</b></span><span class="kn-lbl">object ADD-S</span></span>
+              </span></a>
+            <a class="keynum" href="#results"><span class="kn-head">HO3D-v2 &middot; hand</span>
+              <span class="kn-row">
+                <span class="kn-pair"><span class="kn-val">7.67 &rarr; <b>7.45</b> mm</span><span class="kn-lbl">PA-MPJPE</span></span>
+                <span class="kn-pair"><span class="kn-val">4.12 &rarr; <b>2.77</b></span><span class="kn-lbl">ACCEL</span></span>
+              </span></a>
+            <a class="keynum" href="#dexycb"><span class="kn-head">DexYCB &middot; hand</span>
+              <span class="kn-row">
+                <span class="kn-pair"><span class="kn-val">11.52 &rarr; <b>9.51</b> mm</span><span class="kn-lbl">MPJPE</span></span>
+                <span class="kn-pair"><span class="kn-val">6.88 &rarr; <b>3.27</b></span><span class="kn-lbl">ACCEL</span></span>
+              </span></a>
+            </div>
+            <div class="kn-grid kn-grid-2">
+            <a class="keynum" href="#robot"><span class="kn-head">Dexterous manipulation</span>
+              <span class="kn-row">
+                <span class="kn-pair"><span class="kn-val">25.0 &rarr; <b>74.9</b>%</span><span class="kn-lbl">robot imitation success</span></span>
+              </span></a>
+            <a class="keynum" href="#world-model"><span class="kn-head">Egocentric world modeling</span>
+              <span class="kn-row">
+                <span class="kn-pair"><span class="kn-val">38.49 &rarr; <b>32.33</b> mm</span><span class="kn-lbl">generated-hand MPJPE</span></span>
+                <span class="kn-pair"><span class="kn-val">0.284 &rarr; <b>0.260</b></span><span class="kn-lbl">generated-hand mLPIPS</span></span>
+              </span></a>
+            </div>
           </div>
-          <p class="kn-note">Input estimate (WiLoR / FoundationPose) &rarr; <span class="method-name">DynamicHOI</span>, from the paper.</p>
+          <p class="kn-note">Input estimate (WiLoR / FoundationPose) &rarr; <span class="method-name">DynamicHOI</span>, from the paper. ACCEL in mm/frame&sup2;.</p>
         </div>
       </div>
     </div>
