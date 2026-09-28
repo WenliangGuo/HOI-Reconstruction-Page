@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="DynamicHOI: Coupled Dynamics for Physics-aware HOI Reconstruction">
+  <meta name="keywords" content="hand-object interaction, 3D reconstruction, physics-aware, inverse dynamics, Newton-Euler, diffusion">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DynamicHOI: Coupled Dynamics for Physics-aware HOI Reconstruction</title>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+<nav class="navbar is-light is-fixed-top" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="#"><strong>DynamicHOI</strong></a>
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMain">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div id="navbarMain" class="navbar-menu">
+    <div class="navbar-start">
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#results">Results</a>
+      <a class="navbar-item" href="#hot3d">HOT3D</a>
+      <a class="navbar-item" href="#dexycb">DexYCB</a>
+      <a class="navbar-item" href="#applications">Applications</a>
+      <!-- <a class="navbar-item" href="#citation">Citation</a> -->
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">
+            <span class="method-name">DynamicHOI</span>: Coupled Dynamics for<br>
+            Physics-aware HOI Reconstruction
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="https://wenliangguo.github.io/">Wenliang Guo</a>,</span>
+            <span class="author-block"><a href="https://zbhuang.com/">Zhanbo Huang</a>,</span>
+            <span class="author-block"><a href="https://www.egr.msu.edu/~yukong/">Yu Kong</a></span>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Michigan State University</span>
+          </div>
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- Paper link: set href and remove is-disabled-link once available. -->
+              <span class="link-block">
+                <a class="external-link button is-normal is-rounded is-dark is-disabled-link" aria-disabled="true">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper (Coming Soon)</span>
+                </a>
+              </span>
+              <!-- Code link: set href and remove is-disabled-link once available. -->
+              <span class="link-block">
+                <a class="external-link button is-normal is-rounded is-dark is-disabled-link" aria-disabled="true">
+                  <span class="icon"><i class="fab fa-github"></i></span><span>Code (Coming Soon)</span>
+                </a>
+              </span>
+            </div>
+          </div>
+          <p class="tldr">
+            <span class="method-name">DynamicHOI</span> refines hand&ndash;object trajectories reconstructed from
+            monocular video with physics: hand and object dynamics, coupled through contact forces.
+          </p>
+          <div class="keynums">
+            <a class="keynum" href="#hot3d"><span class="kn-val">11.74 &rarr; <b>5.26</b> cm</span>
+              <span class="kn-lbl">HOT3D hand W-MPJPE</span></a>
+            <a class="keynum" href="#hot3d"><span class="kn-val">52.8 &rarr; <b>78.4</b></span>
+              <span class="kn-lbl">HOT3D object ADD-S</span></a>
+            <a class="keynum" href="#dexycb"><span class="kn-val">11.52 &rarr; <b>9.51</b> mm</span>
+              <span class="kn-lbl">DexYCB MPJPE</span></a>
+            <a class="keynum" href="#robot"><span class="kn-val">25.0 &rarr; <b>74.9</b>%</span>
+              <span class="kn-lbl">robot imitation success</span></a>
+            <a class="keynum keynum-wide" href="#world-model">
+              <span class="kn-pair"><span class="kn-val">38.49 &rarr; <b>32.33</b> mm</span>
+                <span class="kn-lbl">world-model hand MPJPE</span></span>
+              <span class="kn-pair"><span class="kn-val">0.284 &rarr; <b>0.260</b></span>
+                <span class="kn-lbl">world-model hand mLPIPS</span></span>
+            </a>
+          </div>
+          <p class="kn-note">Input estimate (WiLoR / FoundationPose) &rarr; <span class="method-name">DynamicHOI</span>, from the paper.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="abstract">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We study hand-object interaction (HOI) reconstruction from monocular RGB videos, where partial
+            observations can produce visually plausible yet mechanically inconsistent trajectories. Existing
+            methods mainly enforce visual and geometric agreement, leaving the underlying interaction dynamics
+            insufficiently constrained. We propose <span class="method-name">DynamicHOI</span>, a
+            physics-aware HOI reconstruction framework combining geometry-grounded diffusion refinement with
+            coupled hand-object dynamics. Geometry spatially grounds visual evidence for trajectory refinement,
+            while articulated inverse dynamics and Newton-Euler dynamics derive hand generalized forces and
+            object wrenches for dynamics-level supervision. We further couple hand and object dynamics through
+            contact-force transfer and recover active hand actuation as an interaction-level physical quantity.
+            We formulate its empirical magnitude distribution into a probabilistic prior that penalizes unlikely
+            actuation and suppresses mechanically implausible reconstructed motion.
+          </p>
+          <p>
+            Experiments on three HOI datasets show consistent improvements in both hand and object
+            reconstruction. The reconstructed trajectories further benefit downstream applications including
+            hand world-model generation and robotic manipulation learning, demonstrating the value of
+            physics-aware HOI modeling beyond reconstruction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">Method</h2>
+        <h3 class="title is-4 has-text-centered section-subtitle">Geometry-grounded Trajectory Refinement</h3>
+        <figure class="media-figure">
+          <img src="./static/images/framework.png" alt="Framework overview of DynamicHOI."
+               class="qualitative-image framework-image" loading="lazy">
+          <figcaption class="media-caption">
+            Frozen framewise estimators (WiLoR for the hand, FoundationPose for the object) provide an initial
+            trajectory, which a diffusion-based network refines progressively. Hand and object geometry is
+            encoded and used to spatially ground visual features, and an interaction module models
+            hand&ndash;object dependencies before decoding the HOI mesh trajectory.
+          </figcaption>
+        </figure>
+        <h3 class="title is-4 has-text-centered section-subtitle mt-6">Coupled Hand&ndash;Object Dynamics</h3>
+        <figure class="media-figure">
+          <img src="./static/images/force.jpg" alt="Coupled hand-object dynamics." class="qualitative-image" loading="lazy">
+          <figcaption class="media-caption">
+            Articulated inverse dynamics gives the hand generalized forces, and Newton&ndash;Euler dynamics gives
+            the object wrench. Contact-force transfer couples the two, so the active hand actuation
+            <i>a<sub>t</sub></i> accounts for both the hand's own motion and the force it exerts on the object.
+            Its standardized distribution is heavy-tailed (bottom right) and is better captured by a
+            Student-<i>t</i> prior than by a Gaussian, whose negative log-likelihood penalizes unlikely actuation.
+            All physical quantities are computed only during training, so inference adds no extra cost.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="results">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Quantitative Results</h2>
+    <p class="section-lead has-text-centered">
+      Comparison on HOT3D, HO3D-v2, and DexYCB (paper Table 1). <b>Bold</b> / <u>underline</u> denote the
+      best / second-best reconstruction methods. &dagger; denotes our reproduction; unmarked values are
+      paper-reported. &ldquo;&ndash;&rdquo; denotes metrics that are inapplicable to the method or unavailable.
+    </p>
+    <div class="table-wrap"><table class="results-table">
+<caption>(a) Hand&ndash;object reconstruction on HOT3D.</caption>
+<thead>
+<tr><th></th><th colspan="5" class="group">Hand</th><th colspan="7" class="group">Object</th></tr>
+<tr><th class="first">Method</th><th>W&darr;</th><th>WA&darr;</th><th>PA&darr;</th><th>ACCEL&darr;</th><th>RTE&darr;</th><th>ADD@.1&uarr;</th><th>ADD@.3&uarr;</th><th>ADD-S@.1&uarr;</th><th>ADD-S@.3&uarr;</th><th>0.1d&uarr;</th><th>ACCEL&darr;</th><th>5&deg;5cm&uarr;</th></tr>
+</thead><tbody>
+<tr class="group-row"><td colspan="13">Input estimates (y)</td></tr>
+<tr><td class="first">WiLoR&dagger;</td><td>11.74</td><td>3.70</td><td>6.52</td><td>16.22</td><td>75.16</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
+<tr><td class="first">FoundationPose&dagger;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>12.8</td><td>38.9</td><td>25.3</td><td>52.8</td><td>6.5</td><td>70.15</td><td>6.7</td></tr>
+<tr class="group-row"><td colspan="13">Reconstruction methods</td></tr>
+<tr><td class="first">HaWoR&dagger;</td><td>11.73</td><td>3.92</td><td>8.38</td><td class="second">12.90</td><td class="second">73.69</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
+<tr><td class="first">WHOLE</td><td class="second">10.41</td><td class="second">3.26</td><td class="second">6.67</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td class="second">51.1</td><td>&ndash;</td><td class="second">69.9</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
+<tr class="ours-row"><td class="first"><span class="method-name">DynamicHOI</span></td><td class="best">5.26</td><td class="best">1.83</td><td class="best">4.15</td><td class="best">1.68</td><td class="best">73.49</td><td class="best">25.8</td><td class="best">65.4</td><td class="best">48.2</td><td class="best">78.4</td><td class="best">7.1</td><td class="best">5.57</td><td class="best">9.8</td></tr>
+</tbody></table></div>
+    <div class="table-row">
+      <div class="table-wrap"><table class="results-table">
+<caption>(b) Hand reconstruction on HO3D-v2.</caption>
+<thead>
+<tr><th class="first">Method</th><th>PA&darr;</th><th>AUC&uarr;</th><th>PA-V&darr;</th><th>AUC-V&uarr;</th><th>F@5&uarr;</th><th>F@15&uarr;</th><th>ACCEL&darr;</th></tr>
+</thead><tbody>
+<tr class="group-row"><td colspan="8">Input estimates (y)</td></tr>
+<tr><td class="first">WiLoR&dagger;</td><td>7.67</td><td>0.847</td><td>7.66</td><td>0.846</td><td>0.647</td><td>0.984</td><td>4.12</td></tr>
+<tr class="group-row"><td colspan="8">Reconstruction methods</td></tr>
+<tr><td class="first">AMVUR</td><td>8.30</td><td>0.835</td><td>8.20</td><td>0.836</td><td>0.608</td><td>0.965</td><td>&ndash;</td></tr>
+<tr><td class="first">HaMeR</td><td>7.70</td><td>0.846</td><td>7.90</td><td>0.841</td><td>0.635</td><td>0.980</td><td>&ndash;</td></tr>
+<tr><td class="first">Hamba</td><td class="second">7.50</td><td class="second">0.850</td><td class="second">7.70</td><td class="second">0.846</td><td class="second">0.648</td><td class="second">0.982</td><td>&ndash;</td></tr>
+<tr class="ours-row"><td class="first"><span class="method-name">DynamicHOI</span></td><td class="best">7.45</td><td class="best">0.851</td><td class="best">7.49</td><td class="best">0.850</td><td class="best">0.656</td><td class="best">0.985</td><td class="best">2.77</td></tr>
+</tbody></table></div>
+      <div class="table-wrap"><table class="results-table">
+<caption>(c) Hand reconstruction on DexYCB.</caption>
+<thead>
+<tr><th class="first">Method</th><th>MPJPE&darr;</th><th>PA&darr;</th><th>AUC&uarr;</th><th>ACCEL&darr;</th></tr>
+</thead><tbody>
+<tr class="group-row"><td colspan="5">Input estimates (y)</td></tr>
+<tr><td class="first">WiLoR&dagger;</td><td>11.52</td><td>5.33</td><td>0.893</td><td>6.88</td></tr>
+<tr class="group-row"><td colspan="5">Reconstruction methods</td></tr>
+<tr><td class="first">Deformer</td><td>13.64</td><td>5.22</td><td>&ndash;</td><td>6.77</td></tr>
+<tr><td class="first">HaWoR&dagger;</td><td>11.09</td><td>5.32</td><td class="second">0.894</td><td>3.88</td></tr>
+<tr><td class="first">PAD-Hand</td><td class="second">10.56</td><td class="best">4.63</td><td>&ndash;</td><td class="second">3.34</td></tr>
+<tr class="ours-row"><td class="first"><span class="method-name">DynamicHOI</span></td><td class="best">9.51</td><td class="second">4.68</td><td class="best">0.906</td><td class="best">3.27</td></tr>
+</tbody></table></div>
+    </div>
+    <p class="glossary">
+      <b>Metrics.</b> HOT3D hand: W / WA-MPJPE (cm; trajectories aligned on the first two frames / the
+      whole sequence), PA-MPJPE (mm), ACCEL (mm/frame&sup2;), RTE (%). HO3D-v2: PA-MPJPE of joints / vertices
+      (mm) with AUC in [0, 1], F-scores at 5 / 15 mm, ACCEL. DexYCB: wrist-relative MPJPE and PA-MPJPE (mm),
+      AUC, ACCEL. Objects: ADD(-S) AUC (%) at 0.1 / 0.3 m, 0.1d recall (%), ACCEL (mm/frame&sup2;) and
+      5&deg;5cm success (%).
+    </p>
+  </div>
+</section>
+
+<section class="section" id="hot3d">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Hand&ndash;Object Reconstruction on HOT3D</h2>
+    <p class="section-lead has-text-centered">
+      Held-out egocentric HOT3D clips. Both hands and the manipulated object are shown from a fixed
+      viewpoint behind the camera wearer. Each estimate is aligned to the ground truth by one rigid
+      transform per clip, fitted on the hands; thin tubes show the recent path of each hand and the object.
+    </p>
+    <div class="legend">
+      <span><i class="sw sw-gt"></i>Ground truth</span>
+      <span><i class="sw sw-base"></i>WiLoR + FoundationPose (input estimate)</span>
+      <span><i class="sw sw-ours"></i><span class="method-name">DynamicHOI</span> (Ours)</span>
+    </div>
+    <div class="demo-grid">
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/birdhouse_poster.jpg">
+      <source src="./static/videos/hot3d/birdhouse.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a birdhouse</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/plate_poster.jpg">
+      <source src="./static/videos/hot3d/plate.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a plate with both hands</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/coffeepot_poster.jpg">
+      <source src="./static/videos/hot3d/coffeepot.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a coffee pot</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/dino_poster.jpg">
+      <source src="./static/videos/hot3d/dino.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a toy dinosaur</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/bowl_poster.jpg">
+      <source src="./static/videos/hot3d/bowl.mp4" type="video/mp4">
+    </video>
+    <figcaption>Carrying a bowl of fruit</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/keyboard_poster.jpg">
+      <source src="./static/videos/hot3d/keyboard.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a keyboard with both hands</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/pouring_poster.jpg">
+      <source src="./static/videos/hot3d/pouring.mp4" type="video/mp4">
+    </video>
+    <figcaption>Pouring with a vase</figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/hot3d/spatula_poster.jpg">
+      <source src="./static/videos/hot3d/spatula.mp4" type="video/mp4">
+    </video>
+    <figcaption>Scooping fruit with a spatula</figcaption>
+  </figure>
+</div>
+  </div>
+</section>
+
+<section class="section" id="dexycb">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Hand Reconstruction on DexYCB</h2>
+    <p class="section-lead has-text-centered">
+      DexYCB test clips (s0 split), played at 0.5&times; speed. The benchmark scores the hand pose relative to
+      the wrist, so every hand is drawn at the ground-truth wrist position with the ground-truth shape, and
+      is coloured by its per-vertex error (blue = accurate, red = &ge;24 mm off). WiLoR's fingers are more
+      often amber or red than those of <span class="method-name">DynamicHOI</span>. Objects are the
+      ground-truth meshes, drawn in grey for context.
+    </p>
+    <div class="legend">
+      <span><i class="sw sw-gt"></i>Ground truth</span>
+      <span class="errbar-wrap"><span class="errbar-txt">Predicted hands: per-vertex error</span><span class="errbar-scale"><span class="errbar-lbl">0</span><i class="errbar"></i><span class="errbar-lbl">&ge;24 mm</span></span></span>
+    </div>
+    <div class="demo-grid">
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/banana_poster.jpg">
+      <source src="./static/videos/dexycb/banana.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a banana (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/foam_brick_poster.jpg">
+      <source src="./static/videos/dexycb/foam_brick.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a foam brick (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/wood_block_poster.jpg">
+      <source src="./static/videos/dexycb/wood_block.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a wood block (left hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/pitcher_poster.jpg">
+      <source src="./static/videos/dexycb/pitcher.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a pitcher (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/sugar_poster.jpg">
+      <source src="./static/videos/dexycb/sugar.mp4" type="video/mp4">
+    </video>
+    <figcaption>Lifting a sugar box (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/potted_meat_poster.jpg">
+      <source src="./static/videos/dexycb/potted_meat.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a meat can (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/tomato_soup_poster.jpg">
+      <source src="./static/videos/dexycb/tomato_soup.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a soup can (left hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+  <figure class="demo-tile">
+    <video class="qualitative-video" data-autoplay muted loop playsinline preload="none"
+           poster="./static/videos/dexycb/drill_poster.jpg">
+      <source src="./static/videos/dexycb/drill.mp4" type="video/mp4">
+    </video>
+    <figcaption>Picking up a power drill (right hand)<span class="cap-note">hands reconstructed &middot; grey objects: ground-truth meshes</span></figcaption>
+  </figure>
+</div>
+  </div>
+</section>
+
+<section class="section" id="applications">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Downstream Applications</h2>
+    <p class="section-lead has-text-centered">
+      Two downstream tasks use reconstructed hand trajectories. In each, only the source of the
+      trajectories changes; every other component stays fixed.
+    </p>
+
+    <h3 class="title is-4 has-text-centered section-subtitle" id="robot">Dexterous Manipulation: Human Video &rarr; Robot</h3>
+    <div class="app-block">
+      <div class="task-card">
+        <p><b>Task.</b> A UR5 arm with an Allegro hand must pick up an object and lift it into a green
+        target, learning only from one human video. Following ViViDex, the reconstructed human hand
+        trajectory is retargeted to the robot and a PPO policy is trained in simulation to imitate it.
+        The two robots differ only in which method reconstructed the human hand.</p>
+        <p><b>Success</b> = the object is within 3 cm of the target while held.</p>
+      </div>
+      <div class="buttons has-addons is-centered demo-tabs" role="tablist" data-player="robot-player">
+        <button class="button is-rounded is-selected is-link" type="button"
+                data-wide="./static/videos/robot/mug.mp4" data-tall="./static/videos/robot/mug_tall.mp4"
+                data-poster-wide="./static/videos/robot/mug_poster.jpg"
+                data-poster-tall="./static/videos/robot/mug_tall_poster.jpg">Mug</button>
+        <button class="button is-rounded" type="button"
+                data-wide="./static/videos/robot/master_chef_can.mp4" data-tall="./static/videos/robot/master_chef_can_tall.mp4"
+                data-poster-wide="./static/videos/robot/master_chef_can_poster.jpg"
+                data-poster-tall="./static/videos/robot/master_chef_can_tall_poster.jpg">Coffee can</button>
+        <button class="button is-rounded" type="button"
+                data-wide="./static/videos/robot/foam_brick.mp4" data-tall="./static/videos/robot/foam_brick_tall.mp4"
+                data-poster-wide="./static/videos/robot/foam_brick_poster.jpg"
+                data-poster-tall="./static/videos/robot/foam_brick_tall_poster.jpg">Foam brick</button>
+      </div>
+      <video id="robot-player" class="qualitative-video robot-video" data-autoplay muted loop playsinline controls
+             preload="metadata" poster="./static/videos/robot/mug_poster.jpg">
+        <source src="./static/videos/robot/mug.mp4" type="video/mp4">
+      </video>
+      <p class="media-note has-text-centered">
+        WiLoR's reconstruction jitters (see the wrist-acceleration traces), and the policy that imitates it
+        knocks the object over or fails to lift it into the target. The policy trained on the <span class="method-name">DynamicHOI</span>
+        reconstruction lifts it into the target. Rollouts use the paper's evaluation protocol
+        (randomized initial object pose).
+      </p>
+      <div class="bars-card">
+        <div class="bars"><div class="bars-title">Success rate (%) &uarr;</div>
+<div class="bar-row gt"><span class="bar-name">GT hand</span><span class="bar-track"><span class="bar-fill" style="width:87.4%"></span></span><span class="bar-val">87.4%</span></div>
+<div class="bar-row base"><span class="bar-name">WiLoR</span><span class="bar-track"><span class="bar-fill" style="width:25.0%"></span></span><span class="bar-val">25.0%</span></div>
+<div class="bar-row other"><span class="bar-name">HaWoR</span><span class="bar-track"><span class="bar-fill" style="width:24.9%"></span></span><span class="bar-val">24.9%</span></div>
+<div class="bar-row other"><span class="bar-name">HaMeR</span><span class="bar-track"><span class="bar-fill" style="width:62.4%"></span></span><span class="bar-val">62.4%</span></div>
+<div class="bar-row ours"><span class="bar-name"><span class="method-name">DynamicHOI</span></span><span class="bar-track"><span class="bar-fill" style="width:74.9%"></span></span><span class="bar-val">74.9%</span></div>
+</div>
+        <p class="bars-note">Mean success rate over eight held-out DexYCB relocate tasks, 100 episodes each (paper Fig. 4a).</p>
+      </div>
+    </div>
+
+    <h3 class="title is-4 has-text-centered section-subtitle mt-6" id="world-model">Egocentric World Modeling: Hand Action &rarr; Video</h3>
+    <div class="app-block">
+      <p class="app-text">
+        Following EgoHOI, hand trajectories reconstructed on HOT3D condition a video world model that
+        generates the egocentric interaction. Each clip shows the real video (left) and generations
+        conditioned on hand actions from WiLoR (middle) and <span class="method-name">DynamicHOI</span> (right).
+        The green outline marks where the real hand is; the bottom row zooms on it, and the inset shows the
+        hand condition given to the generator.
+      </p>
+            <div class="buttons has-addons is-centered demo-tabs" role="tablist" data-player="egohoi-player"
+           data-caption-target="egohoi-caption">
+        <button class="button is-rounded is-selected is-link" type="button"
+                data-src="./static/videos/egohoi_pitcher.mp4" data-poster="./static/videos/egohoi_pitcher_poster.jpg"
+                data-caption="&lt;b&gt;Lifting a pitcher.&lt;/b&gt; With WiLoR actions the generated hand floats above the pitcher, outside the ground-truth outline; with &lt;span class=&quot;method-name&quot;&gt;DynamicHOI&lt;/span&gt; actions it grasps and lifts the pitcher as in the real video.">Pitcher</button>
+        <button class="button is-rounded" type="button"
+                data-src="./static/videos/egohoi_twohand.mp4" data-poster="./static/videos/egohoi_twohand_poster.jpg"
+                data-caption="&lt;b&gt;Two-handed manipulation.&lt;/b&gt; With WiLoR actions the generated right hand drifts out of the ground-truth outline and overlaps the other hand; with &lt;span class=&quot;method-name&quot;&gt;DynamicHOI&lt;/span&gt; actions it stays on the object.">Two-handed</button>
+        <button class="button is-rounded" type="button"
+                data-src="./static/videos/egohoi_spatula.mp4" data-poster="./static/videos/egohoi_spatula_poster.jpg"
+                data-caption="&lt;b&gt;Serving with a spatula.&lt;/b&gt; With WiLoR actions the generated hand loses the spatula and drifts off the ground-truth outline; with &lt;span class=&quot;method-name&quot;&gt;DynamicHOI&lt;/span&gt; actions it keeps holding the spatula.">Spatula</button>
+      </div>
+      <figure class="media-figure">
+        <video id="egohoi-player" class="qualitative-video" data-autoplay muted loop playsinline controls
+               preload="metadata" poster="./static/videos/egohoi_pitcher_poster.jpg">
+          <source src="./static/videos/egohoi_pitcher.mp4" type="video/mp4">
+        </video>
+        <figcaption class="media-caption" id="egohoi-caption"><b>Lifting a pitcher.</b> With WiLoR actions the generated hand floats above the pitcher, outside the ground-truth outline; with <span class="method-name">DynamicHOI</span> actions it grasps and lifts the pitcher as in the real video.</figcaption>
+      </figure>
+      <div class="bars-card bars-2">
+        <div class="bars"><div class="bars-title">mLPIPS &darr;</div>
+<div class="bar-row gt"><span class="bar-name">GT action</span><span class="bar-track"><span class="bar-fill" style="width:58.8%"></span></span><span class="bar-val">0.194</span></div>
+<div class="bar-row base"><span class="bar-name">WiLoR</span><span class="bar-track"><span class="bar-fill" style="width:86.1%"></span></span><span class="bar-val">0.284</span></div>
+<div class="bar-row other"><span class="bar-name">HaWoR</span><span class="bar-track"><span class="bar-fill" style="width:93.0%"></span></span><span class="bar-val">0.307</span></div>
+<div class="bar-row other"><span class="bar-name">HaMeR</span><span class="bar-track"><span class="bar-fill" style="width:92.4%"></span></span><span class="bar-val">0.305</span></div>
+<div class="bar-row ours"><span class="bar-name"><span class="method-name">DynamicHOI</span></span><span class="bar-track"><span class="bar-fill" style="width:78.8%"></span></span><span class="bar-val">0.260</span></div>
+</div>
+        <div class="bars"><div class="bars-title">MPJPE (mm) &darr;</div>
+<div class="bar-row gt"><span class="bar-name">GT action</span><span class="bar-track"><span class="bar-fill" style="width:51.3%"></span></span><span class="bar-val">24.61</span></div>
+<div class="bar-row base"><span class="bar-name">WiLoR</span><span class="bar-track"><span class="bar-fill" style="width:80.2%"></span></span><span class="bar-val">38.49</span></div>
+<div class="bar-row other"><span class="bar-name">HaWoR</span><span class="bar-track"><span class="bar-fill" style="width:75.1%"></span></span><span class="bar-val">36.05</span></div>
+<div class="bar-row other"><span class="bar-name">HaMeR</span><span class="bar-track"><span class="bar-fill" style="width:93.2%"></span></span><span class="bar-val">44.74</span></div>
+<div class="bar-row ours"><span class="bar-name"><span class="method-name">DynamicHOI</span></span><span class="bar-track"><span class="bar-fill" style="width:67.4%"></span></span><span class="bar-val">32.33</span></div>
+</div>
+        <p class="bars-note">Generated-hand appearance (mLPIPS, in the ground-truth hand region) and kinematic accuracy (MPJPE) (paper Fig. 4b).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Citation: hidden until the paper is released; remove the comment markers to restore.
+<section class="section" id="citation">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">Citation</h2>
+        <div class="citation-card">
+          <div class="citation-head">
+            <p class="citation-hint">If you find this work useful, please cite:</p>
+            <button class="button is-small is-light citation-copy-btn" id="copy-citation-btn" type="button">Copy BibTeX</button>
+          </div>
+          <pre class="citation-pre"><code id="citation-bibtex">@article{guo2026dynamichoi,
+  title   = {DynamicHOI: Coupled Dynamics for Physics-aware HOI Reconstruction},
+  author  = {Guo, Wenliang and Huang, Zhanbo and Kong, Yu},
+  year    = {2026}
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            This website is adapted from the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>
+            project page template and is licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
+            Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
