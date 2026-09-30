@@ -10,7 +10,7 @@ The site is static: `index.html` + `static/` (CSS, JS, figures, demo videos), no
 
 ## To do before the paper release
 
-- Hero section: replace the two *Coming Soon* buttons with the paper / code links
+- Hero section: replace the *Code (Coming Soon)* button with the code link
   (set `href` and drop the `is-disabled-link` class).
 - Citation section: currently commented out in `index.html`; restore it with the final BibTeX.
 
